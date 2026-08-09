@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sukarna Mondal | Entertainment Journalist & Digital Storyteller</title>
+    <style>
+        /* =========================================
+           VARIABLES & RESET
+           ========================================= */
+        :root {
+            --bg-base: #050505;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --accent: #d4af37; /* Gold */
+            --accent-glow: rgba(212, 175, 55, 0.4);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            cursor: none; /* Default to custom cursor for desktop */
+        }
+
+        /* Fallback for touch devices to restore normal interaction */
+        @media (pointer: coarse) {
+            body { cursor: auto; }
+            * { cursor: auto !important; }
+        }
+
+        /* =========================================
+           IMAGE BACKGROUND (iOS Safe)
+           ========================================= */
+        .image-bg {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh;
+            z-index: -2;
+            background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2560&q=80');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.2) contrast(1.1); 
+        }
+
+        .vignette-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle, transparent 40%, #050505 150%);
+            pointer-events: none;
+        }
+
+        /* =========================================
+           CUSTOM CURSOR & TRAIL (Desktop Only)
+           ========================================= */
+        .cursor-dot {
+            position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+            background-color: var(--accent); border-radius: 50%;
+            pointer-events: none; z-index: 10000;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s;
+        }
+
+        .cursor-outline {
+            position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+            border: 1px solid var(--accent); border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease-out, height 0.3s ease-out, background-color 0.3s ease-out;
+        }
+
+        .cursor-outline.hover {
+            width: 80px; height: 80px;
+            background-color: var(--accent-glow);
+            border: none;
+            mix-blend-mode: screen;
+        }
+
+        @media (pointer: coarse) {
+            .cursor-dot, .cursor-outline { display: none !important; }
+        }
+
+        /* =========================================
+           HOLOGRAM MINIMAP (SCROLL TRACKER)
+           ========================================= */
+        .hologram-minimap {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 50vh;
+            width: 2px;
+            z-index: 9000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .minimap-track {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .minimap-progress {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 0%; 
+            background: linear-gradient(to bottom, transparent, var(--accent));
+            box-shadow: 0 0 15px var(--accent), 0 0 5px var(--accent);
+            border-radius: 10px;
+            transition: height 0.1s ease-out, width 0.1s ease-out;
+        }
+
+        .minimap-node {
+            width: 12px;
+            height: 12px;
+            background: #222;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            z-index: 2;
+            transition: all 0.4s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .minimap-node:hover {
+            box-shadow: 0 0 10px var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.2);
+        }
+
+        .minimap-node.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: scale(1.5);
+        }
+
+        /* =========================================
+           LAYOUT & TYPOGRAPHY
+           ========================================= */
+        .container { max-width: 1300px; margin: 0 auto; padding: 0 5%; }
+        section { padding: 150px 0; position: relative; }
+
+        .reveal {
+            opacity: 0; transform: translateY(60px) scale(0.95);
+            filter: blur(10px);
+            transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .reveal.active {
+            opacity: 1; transform: translateY(0) scale(1); filter: blur(0);
+        }
+
+        /* =========================================
+           HERO SECTION
+           ========================================= */
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        
+        .hero-img-placeholder {
+            width: 180px; height: 180px;
+            background: linear-gradient(135deg, #222, #050505);
+            border-radius: 50%; margin-bottom: 2rem;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.1);
+            animation: breathe 6s ease-in-out infinite;
+        }
+
+        .hero h1 {
+            font-size: 6vw; margin-bottom: 1rem; letter-spacing: -2px;
+            background: linear-gradient(to right, #fff, #666);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: textRise 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+
+        .hero p.hook {
+            font-size: 1.5rem; color: var(--text-secondary); max-width: 850px;
+            opacity: 0; animation: textRise 1.5s cubic-bezier(0.19, 1, 0.22, 1) 0.3s forwards;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 0 40px rgba(212, 175, 55, 0.1); }
+            50% { transform: translateY(-15px) scale(1.05); box-shadow: 0 0 60px rgba(212, 175, 55, 0.3); }
+        }
+        @keyframes textRise {
+            0% { opacity: 0; transform: translateY(40px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           3D TILT GRIDS & CARDS
+           ========================================= */
+        .section-title {
+            font-size: 3rem; margin-bottom: 4rem; text-transform: uppercase;
+            letter-spacing: 2px; position: relative;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            perspective: 1000px;
+        }
+
+        .card {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 3rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.5s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .card:hover {
+                border-color: rgba(212, 175, 55, 0.6);
+                box-shadow: 0 30px 60px rgba(0,0,0,0.9), 0 0 40px rgba(212, 175, 55, 0.2);
+            }
+            .card-content {
+                transform: translateZ(30px);
+                transition: transform 0.3s ease;
+            }
+            .card:hover .card-content { transform: translateZ(60px); }
+        }
+
+        /* =========================================
+           PORTFOLIO SPECIFIC
+           ========================================= */
+        .portfolio-card {
+            min-height: 300px; padding: 0; overflow: hidden;
+            position: relative;
+            background-color: #111;
+        }
+
+        .portfolio-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.2) 100%);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 2rem; 
+            transition: background 0.5s ease;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .portfolio-overlay {
+                bottom: -100%;
+                transition: bottom 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            }
+            .portfolio-card:hover .portfolio-overlay { bottom: 0; }
+        }
+
+        /* =========================================
+           MAGNETIC CTA & SEAMLESS FOOTER
+           ========================================= */
+        .cta-section { 
+            text-align: center; 
+            padding: 100px 0 80px 0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .section-divider {
+            width: 100%;
+            max-width: 800px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.3;
+            margin: 4rem 0;
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        .cta-button {
+            display: inline-block; background-color: transparent; color: var(--accent);
+            padding: 2rem 5rem; font-size: 1.3rem; font-weight: 800; text-decoration: none;
+            border-radius: 100px; border: 2px solid var(--accent);
+            text-transform: uppercase; letter-spacing: 3px; position: relative;
+            overflow: hidden; transition: color 0.3s ease, box-shadow 0.3s ease;
+            margin: 2rem 0;
+            cursor: pointer;
+        }
+
+        .cta-button::before {
+            content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 100%;
+            background: var(--accent); transition: top 0.4s cubic-bezier(0.19, 1, 0.22, 1); z-index: -1;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .cta-button:hover::before { top: 0; }
+            .cta-button:hover { color: #000; box-shadow: 0 0 50px rgba(212, 175, 55, 0.6); }
+        }
+        /* Mobile fallback for CTA touch */
+        @media (pointer: coarse) {
+            .cta-button { background: var(--accent); color: #000; }
+        }
+
+        .minimal-footer {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        /* =========================================
+           MOBILE & TABLET RESPONSIVENESS
+           ========================================= */
+        @media (max-width: 1024px) {
+            .grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+            section { padding: 100px 0; }
+            .hero h1 { font-size: 4rem; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 8%; }
+            section { padding: 80px 0; }
+            
+            .hero-img-placeholder { width: 140px; height: 140px; }
+            .hero h1 { font-size: 3rem; line-height: 1.1; }
+            .hero p.hook { font-size: 1.1rem; margin-top: 1rem; }
+            
+            .section-title { font-size: 2rem; margin-bottom: 2.5rem; }
+            .grid { grid-template-columns: 1fr; gap: 1.5rem; }
+            .card { padding: 2rem; }
+            
+            .cta-button { padding: 1.2rem 2.5rem; font-size: 1rem; letter-spacing: 2px; }
+            .section-divider { margin: 2.5rem 0; }
+
+            /* Transforms Minimap to bottom horizontal dock for mobile */
+            .hologram-minimap {
+                top: auto;
+                bottom: 20px;
+                right: 50%;
+                transform: translateX(50%);
+                width: 90vw;
+                height: 4px; /* Thicker track for mobile */
+                flex-direction: row;
+                background: rgba(0,0,0,0.5);
+                border-radius: 10px;
+                padding: 10px 0; /* Expanded hit area */
+                backdrop-filter: blur(10px);
+            }
+            .minimap-progress {
+                height: 100%;
+                width: 0%; /* Driven by JS for horizontal layout */
+                background: linear-gradient(to right, transparent, var(--accent));
+            }
+            .minimap-track { height: 4px; top: 50%; transform: translateY(-50%); }
+            .minimap-progress { top: 50%; transform: translateY(-50%); }
+            .minimap-node { 
+                width: 14px; height: 14px; 
+                margin: 0; /* Resets flex spacing naturally */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cinematic Image Background Elements -->
+    <div class="image-bg"></div>
+    <div class="vignette-overlay"></div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+
+    <!-- Hologram Minimap (Scroll Tracker) -->
+    <div class="hologram-minimap">
+        <div class="minimap-track"></div>
+        <div class="minimap-progress" id="minimap-fill"></div>
+        <div class="minimap-node active" data-target="hero"></div>
+        <div class="minimap-node" data-target="experience"></div>
+        <div class="minimap-node" data-target="skills"></div>
+        <div class="minimap-node" data-target="portfolio"></div>
+        <div class="minimap-node" data-target="contact"></div>
+    </div>
+
+    <div class="container">
+        
+        <!-- HERO SECTION -->
+        <section class="hero" id="hero">
+            <div class="hero-img-placeholder interactive">Avatar</div>
+            <h1 class="parallax-element" data-speed="0.4">Sukarna Mondal</h1>
+            <p class="hook parallax-element" data-speed="0.2">
+                Entertainment journalist and digital storyteller with 15+ years of experience across leading Indian media houses. Experienced in celebrity interviews, entertainment reporting, social media strategy, and premium content creation. Currently in a transition phase, freelancing with magazines and film festivals while exploring opportunities across entertainment, lifestyle, fashion, and digital media.
+            </p>
+        </section>
+
+        <!-- EXPERIENCE SECTION -->
+        <section class="reveal" id="experience">
+            <h2 class="section-title">Professional Experience</h2>
+            <div class="grid">
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.3rem;">Head of Social Media</h3>
+                        <h4 style="color: var(--accent); margin: 0.5rem 0; font-size: 0.9rem;">Della Townships | Jan 2026 - Mar 2026</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Led digital strategy for a luxury real estate and experiential lifestyle brand. Managed content, design, and social media teams while driving audience engagement and premium brand positioning.</p>
+                    </div>
+                </div>
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.3rem;">Principal Digital Content Producer</h3>
+                        <h4 style="color: var(--accent); margin: 0.5rem 0; font-size: 0.9rem;">The Times of India | Jan 2019 - Jan 2026</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Produced entertainment and celebrity-led digital content, conducted exclusive celebrity interviews, hosted digital formats, and curated high-performing editorial features.</p>
+                    </div>
+                </div>
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.3rem;">Senior Executive - Digital Publishing</h3>
+                        <h4 style="color: var(--accent); margin: 0.5rem 0; font-size: 0.9rem;">VOOT App, Viacom18 | Apr 2017 - Jan 2019</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Managed OTT publishing workflows, thematic content positioning, metadata structuring, and digital discoverability initiatives.</p>
+                    </div>
+                </div>
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.3rem;">Editorial & Entertainment Journalism</h3>
+                        <h4 style="color: var(--accent); margin: 0.5rem 0; font-size: 0.9rem;">Pinkvilla, SpotboyE, Deccan Chronicle | 2011-2017</h4>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Covered Bollywood, television, fashion, lifestyle, hospitality, and entertainment events while building strong industry and celebrity networks.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SKILLS SECTION -->
+        <section class="reveal" id="skills">
+            <h2 class="section-title">Core Competencies</h2>
+            <div class="grid">
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--accent); padding-bottom: 0.5rem;">Entertainment Journalism</h3>
+                        <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.95rem;">Deep expertise in celebrity interviews, entertainment reporting, and breaking industry news across digital and print.</p>
+                    </div>
+                </div>
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--accent); padding-bottom: 0.5rem;">Content Creation</h3>
+                        <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.95rem;">Premium content production spanning video formats, digital features, editorial strategy, and OTT publishing workflows.</p>
+                    </div>
+                </div>
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--accent); padding-bottom: 0.5rem;">Social Media Strategy</h3>
+                        <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.95rem;">Driving audience engagement, managing digital discoverability, and orchestrating high-impact influencer collaborations.</p>
+                    </div>
+                </div>
+                <div class="card tilt-card interactive">
+                    <div class="card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem; border-bottom: 1px solid var(--accent); padding-bottom: 0.5rem;">Luxury & Lifestyle</h3>
+                        <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.95rem;">Premium brand positioning, fashion curation, and lifestyle storytelling for high-end hospitality and real estate brands.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PORTFOLIO SECTION -->
+        <section class="reveal" id="portfolio">
+            <h2 class="section-title">Featured Work</h2>
+            <div class="grid">
+                <div class="card portfolio-card interactive tilt-card" style="background: url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80') center/cover;">
+                    <div class="portfolio-overlay card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem;">MAMI Mumbai Film Festival</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Captured audience interactions and exclusive celebrity bites.</p>
+                    </div>
+                </div>
+                <div class="card portfolio-card interactive tilt-card" style="background: url('https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?auto=format&fit=crop&w=800&q=80') center/cover;">
+                    <div class="portfolio-overlay card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem;">Exclusive Celebrity Interviews</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">High-performing editorial features produced for The Times of India.</p>
+                    </div>
+                </div>
+                <div class="card portfolio-card interactive tilt-card" style="background: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80') center/cover;">
+                    <div class="portfolio-overlay card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem;">Luxury Real Estate Campaign</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Social media strategy and premium brand positioning for Della Townships.</p>
+                    </div>
+                </div>
+                <div class="card portfolio-card interactive tilt-card" style="background: url('https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=800&q=80') center/cover;">
+                    <div class="portfolio-overlay card-content">
+                        <h3 style="color: #fff; font-size: 1.2rem;">OTT Content Strategy</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Thematic content positioning and discoverability initiatives for VOOT App.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA SECTION -->
+        <section class="reveal cta-section" id="contact">
+            
+            <div class="section-divider"></div>
+
+            <a href="Sukarna_Mondal_CV (2).pdf" download class="cta-button interactive magnetic-btn">Download PDF CV</a>
+            
+            <div class="section-divider"></div>
+
+            <div class="minimal-footer">
+                © 2026 Sukarna Mondal. All Rights Reserved.
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JAVASCRIPT FOR KINETIC INTERACTIVITY -->
+    <script>
+        // Feature detection for touch devices to optimize JS execution
+        const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+
+        // 1. CURSOR TRAIL LOGIC (Desktop Only)
+        if (!isTouchDevice) {
+            const dot = document.getElementById('cursor-dot');
+            const outline = document.getElementById('cursor-outline');
+            const interactives = document.querySelectorAll('.interactive, .minimap-node');
+            
+            let mouseX = 0, mouseY = 0;
+            let outlineX = 0, outlineY = 0;
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                dot.style.left = `${mouseX}px`;
+                dot.style.top = `${mouseY}px`;
+            });
+
+            function animateCursor() {
+                let distX = mouseX - outlineX;
+                let distY = mouseY - outlineY;
+                outlineX += distX * 0.2;
+                outlineY += distY * 0.2;
+                outline.style.left = `${outlineX}px`;
+                outline.style.top = `${outlineY}px`;
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+
+            interactives.forEach(el => {
+                el.addEventListener('mouseenter', () => outline.classList.add('hover'));
+                el.addEventListener('mouseleave', () => outline.classList.remove('hover'));
+            });
+        }
+
+        // 2. ADAPTIVE HOLOGRAM MINIMAP LOGIC & CLICK TO SCROLL
+        const minimapFill = document.getElementById('minimap-fill');
+        const sections = document.querySelectorAll('section');
+        const minimapNodes = document.querySelectorAll('.minimap-node');
+
+        const updateMinimap = () => {
+            const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (window.scrollY / scrollTotal) * 100;
+            
+            // Check if mobile layout is active (horizontal)
+            if (window.innerWidth <= 768) {
+                minimapFill.style.width = `${scrollPercent}%`;
+                minimapFill.style.height = `100%`;
+            } else {
+                minimapFill.style.height = `${scrollPercent}%`;
+                minimapFill.style.width = `100%`;
+            }
+
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.scrollY >= (sectionTop - sectionHeight / 3)) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            minimapNodes.forEach(node => {
+                node.classList.remove('active');
+                if (node.getAttribute('data-target') === currentSection) {
+                    node.classList.add('active');
+                }
+            });
+        };
+
+        window.addEventListener('scroll', updateMinimap);
+        window.addEventListener('resize', updateMinimap); // Recalculate on device rotation
+
+        // Click to Scroll
+        minimapNodes.forEach(node => {
+            node.addEventListener('click', () => {
+                const targetId = node.getAttribute('data-target');
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // 3. 3D TILT EFFECT FOR CARDS (Desktop Only to prevent touch-sticking)
+        if (!isTouchDevice) {
+            const tiltCards = document.querySelectorAll('.tilt-card');
+            tiltCards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left; 
+                    const y = e.clientY - rect.top;  
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -12; 
+                    const rotateY = ((x - centerX) / centerX) * 12;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                });
+            });
+        }
+
+        // 4. ADVANCED SCROLL REVEAL 
+        const reveals = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+        reveals.forEach(reveal => revealObserver.observe(reveal));
+
+        // 5. PARALLAX SCROLLING FOR TEXT ELEMENTS (Subtle translation)
+        const parallaxElements = document.querySelectorAll('.parallax-element');
+        window.addEventListener('scroll', () => {
+            let scrolled = window.scrollY;
+            parallaxElements.forEach(el => {
+                let speed = el.getAttribute('data-speed');
+                el.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // 6. MAGNETIC CTA BUTTON (Desktop Only)
+        if (!isTouchDevice) {
+            const magneticBtns = document.querySelectorAll('.magnetic-btn');
+            magneticBtns.forEach(btn => {
+                btn.addEventListener('mousemove', (e) => {
+                    const rect = btn.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+                });
+                btn.addEventListener('mouseleave', () => {
+                    btn.style.transform = 'translate(0px, 0px)';
+                });
+            });
+        }
+    </script>
+</body>
+</html>
