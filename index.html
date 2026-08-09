@@ -48,7 +48,7 @@
             width: 100vw; 
             height: 100vh;
             z-index: -2;
-            background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2560&q=80');
+            background-image: url('sm-bg.avif');
             background-size: cover;
             background-position: center;
             filter: brightness(0.2) contrast(1.1); 
@@ -95,6 +95,27 @@
         /* =========================================
            HOLOGRAM MINIMAP (SCROLL TRACKER)
            ========================================= */
+        .minimap-label {
+            position: absolute;
+            right: 25px; /* Positions text to the left of the dot */
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .minimap-node:hover .minimap-label,
+        .minimap-node.active .minimap-label {
+            opacity: 1;
+            color: var(--accent);
+            right: 30px; /* Slides out slightly for a cool kinetic effect */
+        }
         .hologram-minimap {
             position: fixed;
             right: 40px;
@@ -175,7 +196,9 @@
         
         .hero-img-placeholder {
             width: 180px; height: 180px;
-            background: linear-gradient(135deg, #222, #050505);
+            background-image: url('sm-profile.jpg');
+            background-size: cover;
+            background-position: center;
             border-radius: 50%; margin-bottom: 2rem;
             display: flex; align-items: center; justify-content: center;
             border: 1px solid rgba(212, 175, 55, 0.3);
@@ -333,6 +356,7 @@
         }
 
         @media (max-width: 768px) {
+            .minimap-label { display: none; }
             .container { padding: 0 8%; }
             section { padding: 80px 0; }
             
@@ -389,18 +413,18 @@
     <div class="hologram-minimap">
         <div class="minimap-track"></div>
         <div class="minimap-progress" id="minimap-fill"></div>
-        <div class="minimap-node active" data-target="hero"></div>
-        <div class="minimap-node" data-target="experience"></div>
-        <div class="minimap-node" data-target="skills"></div>
-        <div class="minimap-node" data-target="portfolio"></div>
-        <div class="minimap-node" data-target="contact"></div>
+        <div class="minimap-node active" data-target="hero"><span class="minimap-label">Intro</span></div>
+        <div class="minimap-node" data-target="experience"><span class="minimap-label">Exp</span></div>
+        <div class="minimap-node" data-target="skills"><span class="minimap-label">Skills</span></div>
+        <div class="minimap-node" data-target="portfolio"><span class="minimap-label">Awards</span></div>
+        <div class="minimap-node" data-target="contact"><span class="minimap-label">Say Hi!</span></div>
     </div>
 
     <div class="container">
         
         <!-- HERO SECTION -->
         <section class="hero" id="hero">
-            <div class="hero-img-placeholder interactive">Avatar</div>
+            <div class="hero-img-placeholder interactive"></div>
             <h1 class="parallax-element" data-speed="0.4">Sukarna Mondal</h1>
             <p class="hook parallax-element" data-speed="0.2">
                 Entertainment journalist and digital storyteller with 15+ years of experience across leading Indian media houses. Experienced in celebrity interviews, entertainment reporting, social media strategy, and premium content creation. Currently in a transition phase, freelancing with magazines and film festivals while exploring opportunities across entertainment, lifestyle, fashion, and digital media.
